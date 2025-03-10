@@ -1,5 +1,12 @@
+components\PonudbaComponent.class
+components\reservationModal.class
+components\PonudnikComponent.class
+Uporabnik.class
 Main.class
+components\LoginScreen.class
+components\RezervacijaComponent.class
 DatabaseConnection.class
 Kraj.class
 MyJavaFXApp.class
-Uporabnik.class
+components\MainDashboard.class
+database\Backend.class

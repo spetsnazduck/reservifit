@@ -9,12 +9,23 @@ import javafx.stage.Stage;
 import java.sql.*;
 
 public class MyJavaFXApp extends Application {
-    private TableView<Kraj> krajiTable = new TableView<>();
-    private TableView<Uporabnik> uporabnikiTable = new TableView<>();
-
     @Override
     public void start(Stage primaryStage) {
-        Label label;
+        // Show login screen first
+        components.LoginScreen loginScreen = new components.LoginScreen(primaryStage);
+        primaryStage.setScene(loginScreen.getScene());
+        primaryStage.setTitle("Login");
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+}
+
+
+        /*Label label;
         Connection conn = DatabaseConnection.connect();
 
         if (conn != null) {
@@ -225,11 +236,4 @@ public class MyJavaFXApp extends Application {
             uporabnikiTable.setItems(uporabnikiList);
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-}
+        }*/
