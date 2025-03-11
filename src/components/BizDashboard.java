@@ -4,25 +4,24 @@ package components;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.Modality;
 
 import java.util.List;
 import java.util.Objects;
 
-public class MainDashboard {
+public class BizDashboard {
     private Scene scene;
     private static VBox contentContainer;
     private ScrollPane scrollPane;
+    private static String currentadd = "none";
 
-    public MainDashboard(Stage primaryStage) {
+    public BizDashboard(Stage primaryStage, String bizname) {
         VBox root = new VBox();
         root.setPadding(new Insets(0));
 
@@ -33,21 +32,19 @@ public class MainDashboard {
         navbar.setAlignment(Pos.CENTER_LEFT);
 
         // Brand Name
-        Label brand = new Label("ReserviFit");
+        Label brand = new Label("ReserviFit" + " | " + bizname);
         brand.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
 
         // Navigation Buttons
-        Button btnRezervacije = new Button("Rezervacije");
-        Button btnHome = new Button("🏠");
+        Button btnRezervacije = new Button("Termini");
         Button btnPonudbe = new Button("Ponudbe");
-        Button btnPonudniki = new Button("Ponudniki");
+        Button btnDodaj = new Button("Dodaj");
 
         styleNavButton(btnRezervacije);
-        styleNavButton(btnHome);
         styleNavButton(btnPonudbe);
-        styleNavButton(btnPonudniki);
+        styleNavButton(btnDodaj);
 
-        HBox navButtons = new HBox(15, btnRezervacije, btnHome, btnPonudbe, btnPonudniki);
+        HBox navButtons = new HBox(15, btnRezervacije, btnPonudbe, btnDodaj);
         navButtons.setAlignment(Pos.CENTER);
 
         // Right Icons (Settings & Exit)
@@ -55,10 +52,19 @@ public class MainDashboard {
         ImageView exitIcon = createIcon("exit.png", 24);
 
         settingsIcon.setOnMouseClicked(e -> System.out.println("Open settings..."));
-        exitIcon.setOnMouseClicked(e -> primaryStage.close());
+        exitIcon.setOnMouseClicked(e -> {
+            MainDashboard.openLoginWindow();
+            primaryStage.close();
+
+        });
         btnPonudbe.setOnMouseClicked(e -> showOffers());
-        btnPonudniki.setOnMouseClicked(e -> showProviders());
         btnRezervacije.setOnMouseClicked(e -> showRezervacije());
+        btnDodaj.setOnMouseClicked(e -> {
+            if (currentadd == "ponudbe") {
+                System.out.println("ponudbe add");
+                showAddOfferModal();
+            }
+        });
 
         HBox rightIcons = new HBox(15, settingsIcon, exitIcon);
         rightIcons.setAlignment(Pos.CENTER_RIGHT);
@@ -88,19 +94,19 @@ public class MainDashboard {
         root.getChildren().addAll(navbar, scrollPane);
 
         scene = new Scene(root, 1200, 600);
-        primaryStage.setTitle("Main Dashboard");
+        primaryStage.setTitle("Business Dashboard");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    private void showOffers() {
+    public static void showOffers() {
         contentContainer.getChildren().clear();
-        List<PonudbaComponent> offers = database.Backend.fetchOffers();
-
+        List<PonudbaComponentBiz> offers = database.Backend.fetchOffersBiz();
+        currentadd = "ponudbe";
         if (offers.isEmpty()) {
-            contentContainer.getChildren().add(new Label("No offers available."));
+            contentContainer.getChildren().add(new Label("Dodaj ponudbe!"));
         } else {
-            for (PonudbaComponent offer : offers) {
+            for (PonudbaComponentBiz offer : offers) {
                 contentContainer.getChildren().add(offer);
             }
         }
@@ -108,33 +114,107 @@ public class MainDashboard {
 
     public static void showRezervacije() {
         contentContainer.getChildren().clear();
-        List<RezervacijaComponent> rezervacije = database.Backend.getRezervacije();
-
+        List<RezervacijaComponentBiz> rezervacije = database.Backend.getRezervacijeBiz();
+        currentadd = "termini";
         if (rezervacije.isEmpty()) {
-            contentContainer.getChildren().add(new Label("No reservations available."));
+            contentContainer.getChildren().add(new Label("Ni rezerviranih terminov."));
         } else {
-            for (RezervacijaComponent rezervacija : rezervacije) {
+            for (RezervacijaComponentBiz rezervacija : rezervacije) {
                 contentContainer.getChildren().add(rezervacija);
             }
         }
     }
 
-    /**
-     * Fetches and displays Ponudniki (Providers)
-     */
-    private void showProviders() {
-        contentContainer.getChildren().clear();
-        List<PonudnikComponent> providers = database.Backend.fetchPonudniki(); // Fetch from DB
 
-        if (providers.isEmpty()) {
-            contentContainer.getChildren().add(new Label("No providers available."));
-        } else {
-            for (PonudnikComponent provider : providers) {
-                contentContainer.getChildren().add(provider);
+    private void showAddOfferModal() {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Dodaj Ponudbo");
+        dialog.setHeaderText("Vnesite podrobnosti ponudbe");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+
+        // Create input fields
+        TextField cenaField = new TextField();
+        cenaField.setPromptText("Cena (€)");
+
+        TextField opisField = new TextField();
+        opisField.setPromptText("Opis ponudbe");
+
+        TextField trajanjeField = new TextField();
+        trajanjeField.setPromptText("Trajanje v minutah");
+
+        // Restrict trajanjeField to accept only numbers
+        trajanjeField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                trajanjeField.setText(newValue.replaceAll("[^\\d]", ""));
             }
-        }
+        });
+
+        cenaField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                cenaField.setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
+
+        // Layout styling
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(20));
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        grid.add(new Label("Cena:"), 0, 0);
+        grid.add(cenaField, 1, 0);
+        grid.add(new Label("Opis:"), 0, 1);
+        grid.add(opisField, 1, 1);
+        grid.add(new Label("Trajanje (min):"), 0, 2);
+        grid.add(trajanjeField, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Buttons
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // Handle response
+        dialog.setResultConverter(button -> {
+            if (button == ButtonType.OK) {
+                String cena = cenaField.getText();
+                String opis = opisField.getText();
+                String trajanje = trajanjeField.getText();
+
+                if (cena.isEmpty() || opis.isEmpty() || trajanje.isEmpty()) {
+                    showAlert("Vnesite vse podatke!", Alert.AlertType.WARNING);
+                    return null;
+                } else {
+                    boolean res = database.Backend.newPonudba(cena, opis, trajanje);
+                    if (res) {
+                        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+                        confirmDialog.setTitle("Potrditev");
+                        confirmDialog.setContentText("Ponudba uspešno dodana!");
+                        confirmDialog.show();
+                        showOffers();
+                    } else {
+                        Alert confirmDialog = new Alert(Alert.AlertType.WARNING);
+                        confirmDialog.setTitle("Potrditev");
+                        confirmDialog.setContentText("Ponudba ni dodana! Error.");
+                        confirmDialog.show();
+                    }
+                }
+
+                System.out.println("Nova ponudba: Cena: " + cena + ", Opis: " + opis + ", Trajanje: " + trajanje + " minut");
+            }
+            return null;
+        });
+
+        dialog.showAndWait();
     }
 
+
+    private void showAlert(String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle("Opozorilo");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
 
     private void styleNavButton(Button btn) {
@@ -154,4 +234,6 @@ public class MainDashboard {
     public Scene getScene() {
         return scene;
     }
+
+
 }

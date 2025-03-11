@@ -1,6 +1,9 @@
+components\BizDashboard.class
+components\PonudbaComponentBiz.class
 components\PonudbaComponent.class
 components\reservationModal.class
 components\PonudnikComponent.class
+components\RezervacijaComponentBiz.class
 Uporabnik.class
 Main.class
 components\LoginScreen.class
