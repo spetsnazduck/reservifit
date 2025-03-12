@@ -13,3 +13,4 @@ Kraj.class
 MyJavaFXApp.class
 components\MainDashboard.class
 database\Backend.class
+components\Offer.class

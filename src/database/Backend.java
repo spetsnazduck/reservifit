@@ -1,5 +1,6 @@
 package database;
 
+import components.Offer;
 import javafx.scene.control.ComboBox;
 
 import java.sql.*;
@@ -555,4 +556,60 @@ public class Backend {
         }
 
     }
+
+    public static boolean updateOffer(int ponudbaId, double updatedCena, String updatedOpis, Integer updatedTrajanje) {
+        String sql = "SELECT updateOffer(?, ?, ?, ?);"; // Call your SQL function
+
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            // Set parameters
+            stmt.setInt(1, ponudbaId);
+            stmt.setFloat(2, (float) updatedCena);
+            stmt.setString(3, updatedOpis);
+            stmt.setInt(4, updatedTrajanje);
+
+            // Execute query
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean(1); // Assuming your SQL function returns BOOLEAN
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error updating user details: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static Offer getOfferById(int ponudbaId) {
+        Offer offer = null;
+        String sql = "SELECT * FROM fetchOneOffer(?);";
+
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setInt(1, ponudbaId);  // Corrected placement
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) { // Fetch only one offer
+                int id = rs.getInt("id");
+                String description = rs.getString("opis");
+                double price = rs.getDouble("cena");
+                int trajanjePon = rs.getInt("trajanje_ponudbe");
+
+                // Create and return Offer object
+                offer = new Offer(id, price, description, trajanjePon);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error fetching offer: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return offer;
+    }
+
+
 }
