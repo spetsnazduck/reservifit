@@ -51,7 +51,7 @@ public class BizDashboard {
         ImageView settingsIcon = createIcon("settings.png", 24);
         ImageView exitIcon = createIcon("exit.png", 24);
 
-        settingsIcon.setOnMouseClicked(e -> System.out.println("Open settings..."));
+        settingsIcon.setOnMouseClicked(e -> showSettings(primaryStage));
         exitIcon.setOnMouseClicked(e -> {
             MainDashboard.openLoginWindow();
             primaryStage.close();
@@ -229,6 +229,115 @@ public class BizDashboard {
         icon.setFitHeight(size);
         icon.setPreserveRatio(true);
         return icon;
+    }
+
+    public void showSettings(Stage primaryStage) {
+        Stage settingsStage = new Stage();
+        settingsStage.initModality(Modality.APPLICATION_MODAL);
+        settingsStage.setTitle("Settings");
+
+        // Main layout
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(20));
+
+        // Title
+        Label titleLabel = new Label("Settings");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        // === Update User Details Section ===
+        Label userDetailsLabel = new Label("Update User Details");
+        userDetailsLabel.setStyle("-fx-font-weight: bold; -fx-padding: 5 0 0 0;");
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Ime Biznisa");
+
+        TextField emailField = new TextField();
+        emailField.setPromptText("Email");
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Novo geslo");
+
+        TextArea descriptionField = new TextArea();
+        descriptionField.setPromptText("Kratek Bio / Opis");
+
+        ComboBox<String> krajComboBox = new ComboBox<>();
+        krajComboBox.setPromptText("Izberite kraj");
+
+        database.Backend.fetchKraji(krajComboBox);
+
+        descriptionField.setWrapText(true);
+        descriptionField.setPrefRowCount(2);
+
+        Button updateBtn = new Button("Update Details");
+        updateBtn.setStyle("-fx-background-color: #0078D7; -fx-text-fill: white;");
+
+        updateBtn.setOnAction(e -> {
+            String name = nameField.getText().trim();
+            String email = emailField.getText().trim();
+            String password = passwordField.getText().trim();
+            String description = descriptionField.getText().trim();
+            String kraj = krajComboBox.getValue().trim();
+
+            // Validation (optional but recommended)
+            if (name.isEmpty() || email.isEmpty() || kraj == null) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Fill out all of the fields!", ButtonType.OK);
+                alert.show();
+                return;
+            }
+
+            // Send data to backend
+            boolean success = database.Backend.updateBusinessDetails(name, email, password, description, kraj);
+
+            if (success) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Business details updated successfully!", ButtonType.OK);
+                alert.show();
+                settingsStage.close();
+
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to update business details. Please try again.", ButtonType.OK);
+                alert.show();
+            }
+        });
+
+        Label dangerLabel = new Label("Danger Zone");
+        dangerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: red; -fx-padding: 10 0 0 0;");
+
+        Button deleteBtn = new Button("Delete Account");
+        deleteBtn.setStyle("-fx-background-color: #D32F2F; -fx-text-fill: white;");
+
+        deleteBtn.setOnAction(e -> {
+            Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmDialog.setTitle("Potrdi brisanje");
+            confirmDialog.setHeaderText("Ali res hočeš izbrisati biznis?");
+            confirmDialog.setContentText("Ta akcija je končna.");
+
+            if (confirmDialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                // TODO: Add account deletion logic
+                boolean success = database.Backend.deleteBusiness();
+                if (success) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION, "Business deleted succesfully!", ButtonType.OK);
+                    alert.show();
+                    settingsStage.close();
+                    MainDashboard.openLoginWindow();
+                    primaryStage.close();
+
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to delete business. Please try again.", ButtonType.OK);
+                    alert.show();
+                }
+            }
+        });
+
+        // Layout and adding elements
+        layout.getChildren().addAll(
+                titleLabel,
+                userDetailsLabel, nameField, emailField, passwordField, descriptionField, krajComboBox, updateBtn,
+                dangerLabel, deleteBtn
+        );
+
+        Scene scene = new Scene(layout, 350, 450);
+        settingsStage.setScene(scene);
+        settingsStage.showAndWait();
     }
 
     public Scene getScene() {

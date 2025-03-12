@@ -508,4 +508,51 @@ public class Backend {
 
         return false;
     }
+
+    public static boolean deleteBusiness() {
+        String sql = "SELECT deleteBusiness(?);";
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            // Set parameters
+            stmt.setInt(1, loggedUserID);
+
+            // Execute query
+            stmt.executeQuery();
+
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error deleting ponudba: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static boolean updateBusinessDetails(String name, String email, String password, String description, String kraj) {
+        String sql = "SELECT updateBusiness(?, ?, ?, ?, ?, ?);"; // Call your SQL function
+
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            // Set parameters
+            stmt.setInt(1, loggedUserID);
+            stmt.setString(2, email);
+            stmt.setString(3, password);
+            stmt.setString(4, description);
+            stmt.setString(5, kraj);
+            stmt.setString(6, name);
+
+            // Execute query
+            stmt.executeQuery();
+
+            return true;
+
+        } catch (SQLException e) {
+            System.out.println("Error updating business details: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+
+    }
 }
