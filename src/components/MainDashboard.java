@@ -349,8 +349,6 @@ public class MainDashboard {
         ComboBox<String> krajComboBox = new ComboBox<>();
         krajComboBox.setPromptText("Izberite kraj");
 
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select an Image");
 
 
         // Fetch locations from database

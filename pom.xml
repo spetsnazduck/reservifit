@@ -9,6 +9,14 @@
         <java.version>23</java.version> <!-- Ensure you're using Java 23 or the appropriate version -->
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -35,6 +43,12 @@
             <artifactId>postgresql</artifactId>
             <version>42.6.0</version> <!-- Check Neon’s recommended version -->
         </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
