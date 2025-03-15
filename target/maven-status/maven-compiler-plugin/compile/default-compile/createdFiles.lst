@@ -10,7 +10,9 @@ components\LoginScreen.class
 components\RezervacijaComponent.class
 DatabaseConnection.class
 Kraj.class
+components\UserDetails.class
 MyJavaFXApp.class
 components\MainDashboard.class
+components\Biznis.class
 database\Backend.class
 components\Offer.class

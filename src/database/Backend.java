@@ -1,6 +1,6 @@
 package database;
 
-import components.Offer;
+import components.*;
 import javafx.scene.control.ComboBox;
 
 import java.sql.*;
@@ -611,5 +611,168 @@ public class Backend {
         return offer;
     }
 
+    public static Biznis fetchBiznisDetails() {
+        String sql = "SELECT ime, email, pass, opis FROM biznisdetails(?);"; // Fetch business details
 
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setInt(1, loggedUserID); // Set parameter for query
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) { // Fetch only one business record
+                    String name = rs.getString("ime"); // Business name
+                    String email = rs.getString("email");
+                    String pass = rs.getString("pass");
+                    String opis = rs.getString("opis");
+
+                    return new Biznis(name, email, pass, opis);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error fetching business details: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    public static UserDetails fetchUserDetails() {
+        String sql = "SELECT * FROM userdetails(?);"; // Fetch business details
+
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setInt(1, loggedUserID); // Set parameter for query
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) { // Fetch only one business record
+                    String name = rs.getString("imeu"); // Business name
+                    String surname = rs.getString("priimeku");
+                    String email = rs.getString("emailu");
+                    String pass = rs.getString("passu");
+                    String opis = rs.getString("opisu");
+
+                    return new UserDetails(name, surname, email, pass, opis);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error fetching user details: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+
+    public static List<PonudbaComponent> fetchSearchOffers(String search) {
+        List<components.PonudbaComponent> components = new ArrayList<>();
+        String sql = "SELECT * FROM fetchSearchOffers(?);";
+
+        // Using the connect() method to establish a connection
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {  // Corrected syntax here
+
+            // Set parameters: first is ponudbaId, second is logged-in user's ID
+            stmt.setString(1, search);  // Make sure loggedUserID is defined somewhere
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                // Process the result set and create PonudbaComponent objects
+                while (rs.next()) {
+                    Integer id = rs.getInt("id");
+                    String name = rs.getString("ponudnik_ime"); // Description
+                    String description = rs.getString("opis"); // Assuming it's the same as name for now
+                    double price = rs.getDouble("cena");
+                    String location = rs.getString("kraj_ime");
+
+                    // Create PonudbaComponent and add it to the list
+                    components.add(new components.PonudbaComponent(id, name, description, price, location));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error fetching offers: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return components;
+    }
+
+    public static List<PonudnikComponent> fetchSearchPonudniki(String search) {
+        List<PonudnikComponent> components = new ArrayList<>();
+        String sql = "SELECT * FROM getSearchPonudniki(?);"; // Assuming this is the stored procedure call
+
+        // Using the connect() method to establish a connection
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {  // Corrected syntax here
+
+            // Set parameters: first is ponudbaId, second is logged-in user's ID
+            stmt.setString(1, search);
+
+            try (ResultSet rs = stmt.executeQuery()) {  // Corrected this part
+                // Process the result set and create PonudnikComponent objects
+                while (rs.next()) {
+                    Integer id = rs.getInt("id");
+                    String name = rs.getString("ime");
+                    String description = rs.getString("opis");
+                    String tema = rs.getString("tema");
+                    String ime = rs.getString("ime_lastnika");
+                    String priimek = rs.getString("priimek_lastnika");
+                    String location = rs.getString("kraj_ime");
+
+                    // Check if ime or priimek are empty, if so set them to empty string
+                    if (ime == null && priimek == null) {
+                        ime = "";
+                        priimek = "";
+                    }
+
+                    // Create PonudnikComponent and add it to the list
+                    components.add(new PonudnikComponent(id, name, description, tema, ime, priimek, location));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error fetching ponudniki: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return components;
+    }
+
+
+    public static List<RezervacijaComponent> getSearchRezervacije(String search) {
+        List<components.RezervacijaComponent> components = new ArrayList<>();
+        String sql = "SELECT * FROM getSearchRezervacije(?);"; // Function expects two parameters
+
+        try (Connection connection = connect();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            // Set parameters: first is ponudbaId, second is logged-in user's ID
+            stmt.setString(1, search);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Integer id = rs.getInt("termin_id");
+                    Date datum = rs.getDate("datum"); // Description
+                    Time cas = rs.getTime("cas"); // Assuming it's the same as name for now
+                    String ime = rs.getString("ime_lastnika");
+                    String location = rs.getString("kraj_ime");
+
+
+                    // Create PonudbaComponent and add it to the list
+                    components.add(new components.RezervacijaComponent(id, cas, datum, ime, location));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching search rezervacije: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return components;
+    }
 }

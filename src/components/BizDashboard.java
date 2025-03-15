@@ -248,6 +248,8 @@ public class BizDashboard {
         Label userDetailsLabel = new Label("Update User Details");
         userDetailsLabel.setStyle("-fx-font-weight: bold; -fx-padding: 5 0 0 0;");
 
+
+
         TextField nameField = new TextField();
         nameField.setPromptText("Ime Biznisa");
 
@@ -260,6 +262,17 @@ public class BizDashboard {
         TextArea descriptionField = new TextArea();
         descriptionField.setPromptText("Kratek Bio / Opis");
 
+        Biznis biznis = database.Backend.fetchBiznisDetails();
+
+        if (biznis != null) {
+            nameField.setText(biznis.getImebiz());
+            emailField.setText(biznis.getEmail());
+            passwordField.setText(biznis.getPass()); // Works only for non-empty passwords
+            descriptionField.setText(biznis.getOpis());
+        } else {
+            System.out.println("No business details found.");
+        }
+
         ComboBox<String> krajComboBox = new ComboBox<>();
         krajComboBox.setPromptText("Izberite kraj");
 
@@ -268,7 +281,7 @@ public class BizDashboard {
         descriptionField.setWrapText(true);
         descriptionField.setPrefRowCount(2);
 
-        Button updateBtn = new Button("Update Details");
+        Button updateBtn = new Button("Posodbitev");
         updateBtn.setStyle("-fx-background-color: #0078D7; -fx-text-fill: white;");
 
         updateBtn.setOnAction(e -> {
@@ -280,7 +293,7 @@ public class BizDashboard {
 
             // Validation (optional but recommended)
             if (name.isEmpty() || email.isEmpty() || kraj == null) {
-                Alert alert = new Alert(Alert.AlertType.WARNING, "Fill out all of the fields!", ButtonType.OK);
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Izpolni vsa polja!", ButtonType.OK);
                 alert.show();
                 return;
             }
@@ -302,7 +315,7 @@ public class BizDashboard {
         Label dangerLabel = new Label("Danger Zone");
         dangerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: red; -fx-padding: 10 0 0 0;");
 
-        Button deleteBtn = new Button("Delete Account");
+        Button deleteBtn = new Button("Izbriši Biznis");
         deleteBtn.setStyle("-fx-background-color: #D32F2F; -fx-text-fill: white;");
 
         deleteBtn.setOnAction(e -> {
