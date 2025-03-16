@@ -318,12 +318,6 @@ public class Backend {
 
                 ResultSet rs = pstmt.executeQuery();
                 if (rs.next()) {
-                    // Debugging column names
-                    ResultSetMetaData metaData = rs.getMetaData();
-                    int columnCount = metaData.getColumnCount();
-                    for (int i = 1; i <= columnCount; i++) {
-                        System.out.println("Column " + i + ": " + metaData.getColumnName(i));
-                    }
 
                     // Fetching the values from the result set
                     String result = rs.getString(1);  // Assuming the tuple is returned as a String

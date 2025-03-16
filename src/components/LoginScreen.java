@@ -17,60 +17,101 @@ public class LoginScreen {
 
 
     public LoginScreen(Stage primaryStage) {
-        VBox layout = new VBox(10);
-        layout.setPadding(new Insets(20));
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(30));
+        layout.setStyle("-fx-background-color: #1e1e1e; -fx-alignment: center;");
 
         Label titleLabel = new Label("ReserviFit");
-        titleLabel.setStyle("-fx-font-size: 30px; -fx-font-weight: bold;");
+        titleLabel.setStyle(
+                "-fx-font-size: 32px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-text-fill: #ffffff;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(78, 54, 186, 0.8), 15, 0.5, 0, 0);"
+        );
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
+        styleTextField(usernameField);
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
+        styleTextField(passwordField);
 
         Button loginButton = new Button("Login");
-        Button signupButton = new Button("Sign Up");
-        signupButton.setOnMouseClicked(e -> openSignUp());
+        styleButton(loginButton);
         loginButton.setOnAction(e -> {
-            // Check if the username and password fields are not empty
-            if (usernameField.getText() != "" && passwordField.getText() != "") {
-
-                // Output to the console that login attempt has started
+            if (!usernameField.getText().isEmpty() && !passwordField.getText().isEmpty()) {
                 System.out.println("Login attempt for user: " + usernameField.getText());
-
-                // Call the validateUser method to check authentication
                 boolean isAuthenticated = database.Backend.validateUser(usernameField.getText(), passwordField.getText());
                 boolean isBiz = database.Backend.isBiz();
-                String bizName = "none";
-                if (isBiz == true) {
-                    bizName = database.Backend.fetchBizName();
-                }
-                // Output the result of authentication check
+                String bizName = isBiz ? database.Backend.fetchBizName() : "none";
+
                 if (isAuthenticated) {
                     System.out.println("Login successful for user: " + usernameField.getText());
-                    if (isBiz == true) {
-                        BizDashboard bizDashboard = new BizDashboard(primaryStage, bizName);
-                        primaryStage.setScene(bizDashboard.getScene());
+                    if (isBiz) {
+                        primaryStage.setScene(new BizDashboard(primaryStage, bizName).getScene());
                     } else {
-                        MainDashboard mainDashboard = new MainDashboard(primaryStage);
-                        primaryStage.setScene(mainDashboard.getScene());
+                        primaryStage.setScene(new MainDashboard(primaryStage).getScene());
                     }
                 } else {
                     System.out.println("Login failed for user: " + usernameField.getText());
-                    showAlert("Login Failed", "Invalid credentials");
+                    showAlert("Login Failed", "Napačno geslo ali email. Če še nimaš računa se prijavi!");
                 }
             } else {
-                System.out.println("Login failed, empty field detected.");
-                showAlert("Login Failed", "You left a field empty!");
+                System.out.println("Izpolni oba polja!");
+                showAlert("Login Failed", "Pustil si prazno polje!");
             }
         });
-        HBox actionButtons = new HBox(10);
+
+        Button signupButton = new Button("Sign Up");
+        styleButton(signupButton);
+        signupButton.setOnMouseClicked(e -> openSignUp());
+
+        HBox actionButtons = new HBox(15, loginButton, signupButton);
         actionButtons.setPadding(new Insets(20));
-        actionButtons.getChildren().addAll(loginButton, signupButton);
+        actionButtons.setStyle("-fx-alignment: center;");
 
         layout.getChildren().addAll(titleLabel, usernameField, passwordField, actionButtons);
-        scene = new Scene(layout, 300, 200);
+        scene = new Scene(layout, 400, 500);
+    }
+
+    private void styleTextField(TextField textField) {
+        textField.setStyle(
+                "-fx-font-size: 18px; " +
+                        "-fx-padding: 10px; " +
+                        "-fx-background-radius: 10px; " +
+                        "-fx-background-color: #2c2c2c; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-border-color: transparent;"
+        );
+        textField.setOnMouseEntered(e -> textField.setStyle(
+                "-fx-font-size: 18px; -fx-text-fill: white; -fx-background-color: #383838; -fx-border-color: #00ffff; -fx-border-width: 1px;"
+        ));
+        textField.setOnMouseExited(e -> textField.setStyle(
+                "-fx-font-size: 18px; -fx-text-fill: white; -fx-background-color: #2c2c2c; -fx-border-color: transparent;"
+        ));
+        textField.setOnMouseClicked(e -> textField.setStyle(
+                "-fx-font-size: 18px; -fx-text-fill: white; -fx-background-color: #383838; -fx-border-color: #00ffff; -fx-border-width: 1px;"
+        ));
+    }
+
+    private void styleButton(Button button) {
+        button.setStyle(
+                "-fx-font-size: 16px; " +
+                        "-fx-background-color: linear-gradient(to right, #00c6ff, #4e36ba); " +
+                        "-fx-text-fill: white; " +
+                        "-fx-padding: 10px 20px; " +
+                        "-fx-background-radius: 10px; " +
+                        "-fx-border-color: transparent;"
+        );
+        button.setOnMouseEntered(e -> button.setStyle(
+                "-fx-font-size: 16px; -fx-background-color: linear-gradient(to right, #0072ff, #4e36ba); " +
+                        "-fx-border-color: #00ffff; -fx-border-width: 1px;"
+        ));
+        button.setOnMouseExited(e -> button.setStyle(
+                "-fx-font-size: 16px; -fx-background-color: linear-gradient(to right, #00c6ff, #4e36ba); " +
+                        "-fx-border-color: transparent;"
+        ));
     }
 
     public Scene getScene() {
@@ -80,39 +121,43 @@ public class LoginScreen {
     private void openSignUp() {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Registracija");
-        dialog.setHeaderText(null);  // No default header
         dialog.initModality(Modality.APPLICATION_MODAL);
-
-        // Set custom style
         dialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         dialog.getDialogPane().getStyleClass().add("custom-dialog");
+
         Label titleLabel = new Label("ReserviFit");
-        titleLabel.setStyle("-fx-font-size: 30px; -fx-font-weight: bold;");
-        // Input Fields
+        titleLabel.getStyleClass().add("title-label");
+
         TextField imeField = new TextField();
         imeField.setPromptText("Ime");
+        imeField.getStyleClass().add("custom-field");
 
         TextField priimekField = new TextField();
         priimekField.setPromptText("Priimek");
+        priimekField.getStyleClass().add("custom-field");
 
         TextField emailField = new TextField();
         emailField.setPromptText("E-pošta");
+        emailField.getStyleClass().add("custom-field");
 
         PasswordField passField = new PasswordField();
         passField.setPromptText("Geslo");
+        passField.getStyleClass().add("custom-field");
 
         TextField opisField = new TextField();
         opisField.setPromptText("Opis");
+        opisField.getStyleClass().add("custom-field");
 
         DatePicker letoRojPicker = new DatePicker();
         letoRojPicker.setPromptText("Leto rojstva");
+        letoRojPicker.getStyleClass().add("custom-field");
 
         ComboBox<String> krajComboBox = new ComboBox<>();
         krajComboBox.setPromptText("Izberite kraj");
+        krajComboBox.getStyleClass().add("custom-field");
 
-        database.Backend.fetchKraji(krajComboBox); // Fetch data from DB
+        database.Backend.fetchKraji(krajComboBox);
 
-        // Layout Styling
         VBox layout = new VBox(10, titleLabel, imeField, priimekField, emailField, passField, opisField, letoRojPicker, krajComboBox);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
@@ -121,7 +166,6 @@ public class LoginScreen {
         dialog.getDialogPane().setContent(layout);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // Form Submission
         dialog.setResultConverter(button -> {
             if (button == ButtonType.OK) {
                 String ime = imeField.getText();
@@ -133,19 +177,20 @@ public class LoginScreen {
                 String kraj = krajComboBox.getValue();
 
                 if (ime.isEmpty() || priimek.isEmpty() || email.isEmpty() || pass.isEmpty() || letoRojstva.isEmpty() || kraj == null) {
-                    showAlert("Vnesite vse podatke!", String.valueOf(Alert.AlertType.WARNING));
+                    showAlert("Vnesite vse podatke!", "warning");
                     return null;
                 }
 
                 database.Backend.registerUser(ime, priimek, email, pass, opis, letoRojstva, kraj);
-                    showAlert("Dobrodošel! Prijavi se.", String.valueOf(Alert.AlertType.INFORMATION));
-                    dialog.close();
+                showAlert("Dobrodošel! Prijavi se.", "info");
+                dialog.close();
             }
             return null;
         });
 
         dialog.showAndWait();
     }
+
 
 
 
